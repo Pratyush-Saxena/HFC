@@ -31,8 +31,9 @@ class Screening(View):
 	def get(self,request,screening_uuid):
 		mentors = Community_Member.objects.filter(type = 'Mentor')[:6]
 		screen = Screenings.objects.get(screening_uuid = screening_uuid)
+		questions = Screenings_Questions.objects.filter(screening_id = screen.screening_id)
 		if screen.status == 'Passed' or screen.status == 'Failed':
-			return render(request, 'ScreeningApp/screening_completed.html')
+			return render(request, 'ScreeningApp/screening_completed.html',{'questions':questions})
 		if screen.status == "Closed":
 			return render(request, 'ScreeningApp/screening_error.html')
 		screening_id = screen.screening_id
@@ -101,13 +102,11 @@ class Result(View):
 	def get(self,request,screening_uuid):
 		screen_obj = Screenings.objects.get(screening_uuid = screening_uuid)
 		candidate_name =  screen_obj.candidate_id 
-		screening_id= screen_obj.screening_id
-		questions = Screenings_Questions.objects.filter(screening_id=screening_id)
 		percentage = screen_obj.screening_result
 		if screen_obj.status == 'Passed':
 			message = "{name} passed the screening with  {percentage} percentage".format(name = candidate_name, percentage = percentage)
 			to_list = ['team@hackforchange.co.in',]
 			send_mail('New Job Applicant ', message,'HackForChange Team<noreply@hackforchange.co.in>',to_list)
-			return render(request, 'ScreeningApp/screening_result_pass.html',{'questions':questions})
+			return render(request, 'ScreeningApp/screening_result_pass.html')
 		if screen_obj.status == 'Failed':
 			return render(request, 'ScreeningApp/screening_result_fail.html')
